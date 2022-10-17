@@ -2,11 +2,15 @@
 //OBJ01-J. Limit accessibility of fields
 
 
-//Noncompliant Code Example (Public Primitive Field)
-//In this noncompliant code example, the total field tracks the total number of elements as they are added to and removed from a container using the methods add() and remove() respectively.
+//Compliant Solution (Private Primitive Field)
+//Accessor methods provide controlled access to fields outside of the package in which their class is declared. This compliant solution declares total as private and provides a public accessor. The add() and remove() methods modify its value while preserving class invariants. 
 public class Widget {
-  public int total; // Number of elements
+  private int total; // Declared private
  
+  public int getTotal() {
+    return total;
+  }
+  
   void add() {
     if (total < Integer.MAX_VALUE) {     
       total++;

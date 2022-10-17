@@ -2,18 +2,25 @@
 //LCK02-J. Do not synchronize on the class object returned by getClass()
 
 
-//Noncompliant Code Example (getClass() Lock Object)
+//Compliant Solution (Class.forName())
+//This compliant solution uses the Class.forName() method to synchronize on the Base class's Class object:
+
 class Base {
   static DateFormat format =
       DateFormat.getDateInstance(DateFormat.MEDIUM);
  
   public Date parse(String str) throws ParseException {
-    synchronized (getClass()) {
-      return format.parse(str);
+    try {
+      synchronized (Class.forName("Base")) {
+        return format.parse(str);
+      }
+    } catch (ClassNotFoundException x) {
+      // "Base" not found; handle error
     }
+    return null;
   }
 }
- 
+
 class Derived extends Base {
   public Date doSomethingAndParse(String str) throws ParseException {
     synchronized (Base.class) {

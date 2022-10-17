@@ -2,55 +2,40 @@
 //IDS00-J. Prevent SQL injection
 
 
-//Noncompliant Code Example (PreparedStatement)
-//The JDBC library provides an API for building SQL commands that sanitize untrusted data. The java.sql.PreparedStatement class properly escapes input strings, preventing SQL injection when used correctly. This code example modifies the doPrivilegedAction() method to use a PreparedStatement instead of java.sql.Statement. However, the prepared statement still permits a SQL injection attack by incorporating the unsanitized input argument username into the prepared statement.
+//Compliant Solution (PreparedStatement)
+//This compliant solution uses a parametric query with a ? character as a placeholder for the argument. This code also validates the length of the username argument, preventing an attacker from submitting an arbitrarily long user name.
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
- 
-class Login {
-  public Connection getConnection() throws SQLException {
-    DriverManager.registerDriver(new
-            com.microsoft.sqlserver.jdbc.SQLServerDriver());
-    String dbConnection =
-      PropertyManager.getProperty("db.connection");
-    // Can hold some value like
-    // "jdbc:microsoft:sqlserver://<HOST>:1433,<UID>,<PWD>"
-    return DriverManager.getConnection(dbConnection);
+public void doPrivilegedAction(
+  String username, char[] password
+) throws SQLException {
+  Connection connection = getConnection();
+  if (connection == null) {
+    // Handle error
   }
+  try {
+    String pwd = hashPassword(password);
  
-  String hashPassword(char[] password) {
-    // Create hash of password
-  }
- 
-  public void doPrivilegedAction(
-    String username, char[] password
-  ) throws SQLException {
-    Connection connection = getConnection();
-    if (connection == null) {
+    // Validate username length
+    if (username.length() > 8) {
       // Handle error
     }
+ 
+    String sqlString =
+      "select * from db_user where username=? and password=?";
+    PreparedStatement stmt = connection.prepareStatement(sqlString);
+    stmt.setString(1, username);
+    stmt.setString(2, pwd);
+    ResultSet rs = stmt.executeQuery();
+    if (!rs.next()) {
+      throw new SecurityException("User name or password incorrect");
+    }
+ 
+    // Authenticated; proceed
+  } finally {
     try {
-      String pwd = hashPassword(password);
-      String sqlString = "select * from db_user where username=" +
-        username + " and password =" + pwd;     
-      PreparedStatement stmt = connection.prepareStatement(sqlString);
- 
-      ResultSet rs = stmt.executeQuery();
-      if (!rs.next()) {
-        throw new SecurityException("User name or password incorrect");
-      }
- 
-      // Authenticated; proceed
-    } finally {
-      try {
-        connection.close();
-      } catch (SQLException x) {
-        // Forward to handler
-      }
+      connection.close();
+    } catch (SQLException x) {
+      // Forward to handler
     }
   }
 }
