@@ -2,21 +2,17 @@
 //MET01-J. Never use assertions to validate method arguments Given the non-compliant code below:
 
 
-//Noncompliant Code Example
-//The method getAbsAdd() computes and returns the sum of the absolute value of parameters x and y. It lacks argument validation, in violation of MET00-J. Validate method arguments. Consequently, it can produce incorrect results because of integer overflow or when either or both of its arguments are Integer.MIN_VALUE.
-public static int getAbsAdd(int x, int y) {
-  return Math.abs(x) + Math.abs(y);
-}
-getAbsAdd(Integer.MIN_VALUE, 1);
+//Compliant Solution
+//This compliant solution validates the method arguments by ensuring that values passed to Math.abs() exclude Integer.MIN_VALUE and also by checking for integer overflow:
 
-
-//Noncompliant Code Example
-//This noncompliant code example uses assertions to validate arguments of a public method:
 public static int getAbsAdd(int x, int y) {
-  assert x != Integer.MIN_VALUE;
-  assert y != Integer.MIN_VALUE;
+  if (x == Integer.MIN_VALUE || y == Integer.MIN_VALUE) {
+    throw new IllegalArgumentException();
+  }
   int absX = Math.abs(x);
   int absY = Math.abs(y);
-  assert (absX <= Integer.MAX_VALUE - absY);
+  if (absX > Integer.MAX_VALUE - absY) {
+    throw new IllegalArgumentException();
+  }
   return absX + absY;
 }
