@@ -1,3 +1,7 @@
+//Rule 00. Input Validation and Data Sanitization (IDS)
+//IDS00-J. Prevent SQL injection
+
+
 //Noncompliant Code Example (PreparedStatement)
 //The JDBC library provides an API for building SQL commands that sanitize untrusted data. The java.sql.PreparedStatement class properly escapes input strings, preventing SQL injection when used correctly. This code example modifies the doPrivilegedAction() method to use a PreparedStatement instead of java.sql.Statement. However, the prepared statement still permits a SQL injection attack by incorporating the unsanitized input argument username into the prepared statement.
 
